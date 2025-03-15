@@ -1,0 +1,59 @@
+.time-container {
+  position: relative;
+  height: 30px;
+}
+.menu-button-container {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  z-index: 1;
+}
+
+.time-button-container {
+  position: absolute;
+  left: 0;
+  width: 80px;
+  height: 30px;
+  z-index: 2;
+}
+.cancel-button-container {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: -100%;
+  z-index: 1;
+}
+
+.time-container:hover .menu-button-container,
+.menu-open-container {
+  background-color: #90caf9;
+  border-bottom-left-radius: 8px;
+  border-top-left-radius: 8px;
+  translate: 300ms;
+}
+
+.time-container:hover .menu-button-container:hover {
+  background: #42a5f5;
+}
+.time-container:hover .time-button-container,
+.time-open-container {
+  left: 30px;
+  translate: 300ms;
+}
+.time-container:hover .time-button,
+.time-open {
+  box-shadow: none;
+  border-radius: 0 !important;
+}
+.time-container:hover .cancel-button-container,
+.cancel-open-container {
+  left: 110px;
+  background-color: #90caf9;
+  border-bottom-right-radius: 8px;
+  border-top-right-radius: 8px;
+  translate: 300ms;
+}
+
+.time-container:hover .cancel-button-container:hover {
+  background: #42a5f5;
+}
