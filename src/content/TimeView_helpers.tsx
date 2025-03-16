@@ -14,10 +14,7 @@ export function dataAction(
   if (dataPackage.current.contentInterval) {
     clearInterval(dataPackage.current.contentInterval);
   }
-  if (
-    (dataPackage.current.videoID.length === 0 || dataPackage.current.pause) &&
-    msg.value.DisableSite === undefined
-  ) {
+  if (dataPackage.current.videoID.length === 0 || dataPackage.current.pause) {
     return;
   }
   var videoID = dataPackage.current.videoID;
@@ -33,7 +30,8 @@ export function dataAction(
         ...dataPackage.current.videoData,
         ...video,
       };
-      if (video && video.expiration && video.expiration >= Date.now() / 1000) {
+
+      if (video && video.expiration && video.expiration <= Date.now() / 1000) {
         newVideoData = {
           hours: 0,
           minutes: 0,
@@ -80,13 +78,16 @@ export function contentLoop(dataPackage: React.RefObject<DataPackage>) {
   var player = document.querySelector(".video-stream") as HTMLVideoElement;
   var adCheck1 = document.querySelector(".ytp-ad-button");
   var adCheck2 = document.querySelector(".ytp-ad-avatar");
-
-  console.log(`data loop: ${JSON.stringify(dataPackage.current.videoData)}`);
+  var child = document.querySelector("#youtime-movable");
+  var childBounds = child.getBoundingClientRect();
+  var parent = document.getElementById("player-container-inner");
+  var globalPos = parent.getBoundingClientRect();
   if (
     player &&
     dataPackage.current.videoID.length > 0 &&
     !adCheck1 &&
-    !adCheck2
+    !adCheck2 &&
+    !dataPackage.current.pause
   ) {
     var currentTime = player.currentTime;
     var newVideoData = {

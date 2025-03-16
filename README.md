@@ -2,9 +2,9 @@
 
 ## Description
 
-Extension that memorized video last timestamp of a video, usefull when disabling youtube history or when not updating right away.
+Extension that memorized video last timestamp of a video, useful when disabling youtube history or when not updating right away.
 
-## extension setup
+## Extension setup
 
 installing with webpack with the accepted build vars:
 

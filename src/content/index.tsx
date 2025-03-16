@@ -40,7 +40,9 @@ class Content {
   appendButton = (append: HTMLElement) => {
     var element = document.createElement("div");
     element.id = "youtime-frame";
+    element.className = "youtime-frame";
     element.style.position = "absolute";
+    element.style.visibility = "hidden";
     element.style.left = "0";
     element.style.top = "0";
     element.style.paddingLeft = "5px";
