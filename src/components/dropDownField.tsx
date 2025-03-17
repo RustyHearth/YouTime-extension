@@ -91,7 +91,7 @@ function DropdownField({
               textAlign: "center",
             },
             sx: {
-              height: "400px",
+              height: "250px",
             },
             slotProps: {
               root: {

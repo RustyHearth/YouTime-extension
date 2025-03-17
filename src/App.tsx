@@ -1,38 +1,30 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import DropdownField, { numArray } from "./components/dropDownField";
 import "./App.css";
 import {
   Box,
   Button,
   CssBaseline,
-  FormControlLabel,
   Grid2,
   SelectChangeEvent,
-  Switch,
   TextField,
   ThemeProvider,
 } from "@mui/material";
-import { MainTheme, textFieldSX } from "./themes/MainTheme";
+import {
+  FormControlLabelStyle,
+  MainTheme,
+  SwitchStyle,
+  textFieldSX,
+} from "./themes/MainTheme";
 import {
   CheckboxListener,
   SelectListener,
   TextFieldListener,
 } from "./listeners/Listeners";
-import { runtime, storage, tabs } from "webextension-polyfill";
-import { MessageType, VideoDataType } from "./types/types.d";
-
-function compare(obj1: MessageType, obj2: MessageType) {
-  if (
-    obj1.ResetTime !== obj2.ResetTime ||
-    obj1.ExpireTime !== obj2.ExpireTime ||
-    obj1.RefreshTime !== obj2.RefreshTime ||
-    obj1.DisableSite !== obj2.DisableSite
-  ) {
-    return false;
-  }
-
-  return true;
-}
+import { runtime } from "webextension-polyfill";
+import { MessageType } from "./types/types.d";
+import { getStorageData } from "./helpers/extension_helper";
+import { compareStorage } from "./helpers/data_helpers";
 
 function App() {
   const [extension, setExtension] = useState<MessageType>({
@@ -40,39 +32,28 @@ function App() {
     RefreshTime: 5,
     ResetTime: 15,
     DisableSite: false,
+    StopExtension: false,
   });
   useEffect(() => {
-    storage.local
-      .get(["ExpireTime", "RefreshTime", "ResetTime"])
-      .then((item) => {
-        tabs.query({ active: true }).then((items) => {
-          const videoID =
-            new URLSearchParams(items[0].url?.split("?")[1] ?? "").get("v") ??
-            "";
-          storage.local.get([videoID.toString()]).then((videoItem) => {
-            var video = videoItem[videoID] as VideoDataType;
-            var storageItem = item as MessageType;
-            var newValue: MessageType = {
-              ExpireTime: storageItem.ExpireTime ?? 1,
-              RefreshTime: storageItem.RefreshTime ?? 5,
-              ResetTime: storageItem.ResetTime ?? 15,
-            };
-
-            if (video) {
-              newValue = {
-                ...newValue,
-                DisableSite: video.DisableSite ?? false,
-              };
-            }
-            if (!compare(newValue, extension)) {
-              setExtension(newValue);
-            }
-          });
-        });
-      });
+    getStorageData((storageData, videoID) => {
+      var videoData = storageData[videoID];
+      var newValue: MessageType = {
+        ExpireTime: storageData.ExpireTime ?? 1,
+        RefreshTime: storageData.RefreshTime ?? 5,
+        ResetTime: storageData.ResetTime ?? 15,
+        DisableSite:
+          ((videoData && videoData.DisableSite) ||
+            (storageData.StopExtension ?? false)) ??
+          false,
+        StopExtension: storageData.StopExtension ?? false,
+      };
+      if (!compareStorage(newValue, extension)) {
+        setExtension(newValue);
+      }
+    }, true);
   }, [extension]);
   const handleClear = () => {
-    runtime.sendMessage({ action: "clearAll" });
+    runtime.sendMessage({ action: "clearAll", value: {} });
   };
   return (
     <ThemeProvider theme={MainTheme}>
@@ -86,10 +67,11 @@ function App() {
               label="Expiration Time"
               variant="outlined"
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                TextFieldListener(event);
-                setExtension({
-                  ...extension,
-                  ExpireTime: parseInt(event.target.value),
+                TextFieldListener(event, () => {
+                  setExtension({
+                    ...extension,
+                    ExpireTime: parseInt(event.target.value),
+                  });
                 });
               }}
               sx={{ ...textFieldSX }}
@@ -121,10 +103,11 @@ function App() {
                 sx={textFieldSX}
                 initialValue={extension.RefreshTime}
                 onChange={(id: string, event: SelectChangeEvent) => {
-                  SelectListener(id, event);
-                  setExtension({
-                    ...extension,
-                    RefreshTime: parseInt(event.target.value),
+                  SelectListener(id, event, () => {
+                    setExtension({
+                      ...extension,
+                      RefreshTime: parseInt(event.target.value),
+                    });
                   });
                 }}
               />
@@ -139,10 +122,11 @@ function App() {
                 sx={textFieldSX}
                 initialValue={extension.ResetTime}
                 onChange={(id: string, event: SelectChangeEvent) => {
-                  SelectListener(id, event);
-                  setExtension({
-                    ...extension,
-                    ResetTime: parseInt(event.target.value),
+                  SelectListener(id, event, () => {
+                    setExtension({
+                      ...extension,
+                      ResetTime: parseInt(event.target.value),
+                    });
                   });
                 }}
               />
@@ -170,20 +154,9 @@ function App() {
               justifyContent: "start",
             }}
           >
-            <FormControlLabel
+            <FormControlLabelStyle
               label="Disable Site"
               labelPlacement="start"
-              checked={extension.DisableSite}
-              value={extension.DisableSite}
-              sx={{
-                textAlign: "start",
-                width: "100%",
-                height: "60px",
-                marginLeft: "0",
-                marginTop: "auto",
-                marginBottom: "auto",
-                display: "inline-flex",
-              }}
               slotProps={{
                 typography: {
                   textAlign: "start",
@@ -193,7 +166,7 @@ function App() {
                 },
               }}
               control={
-                <Switch
+                <SwitchStyle
                   id="DisableSite"
                   aria-label="Disable Site"
                   edge="end"
@@ -204,11 +177,44 @@ function App() {
                     event: React.ChangeEvent<HTMLInputElement>,
                     checked: boolean,
                   ) => {
-                    CheckboxListener(event, checked);
-                    console.log(checked);
-                    setExtension({
-                      ...extension,
-                      DisableSite: checked,
+                    CheckboxListener(event, checked, () => {
+                      setExtension({
+                        ...extension,
+                        DisableSite: checked,
+                      });
+                    });
+                  }}
+                />
+              }
+            />
+            <FormControlLabelStyle
+              label="Stop Extension"
+              labelPlacement="start"
+              slotProps={{
+                typography: {
+                  textAlign: "start",
+                  marginTop: "auto",
+                  marginBottom: "auto",
+                  paddingTop: "15px",
+                },
+              }}
+              control={
+                <SwitchStyle
+                  id="StopExtension"
+                  aria-label="Stop Extension"
+                  edge="end"
+                  style={{ justifyContent: "end" }}
+                  checked={extension.StopExtension}
+                  value={extension.StopExtension}
+                  onChange={(
+                    event: React.ChangeEvent<HTMLInputElement>,
+                    checked: boolean,
+                  ) => {
+                    CheckboxListener(event, checked, () => {
+                      setExtension({
+                        ...extension,
+                        StopExtension: checked,
+                      });
                     });
                   }}
                 />

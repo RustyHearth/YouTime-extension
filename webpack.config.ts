@@ -50,6 +50,7 @@ module.exports = (env) => {
         components: path.resolve(__dirname, "./src/components/"),
         themes: path.resolve(__dirname, "./src/themes/"),
         types: path.resolve(__dirname, "./src/types/"),
+        helpers: path.resolve(__dirname, "./src/helpers/"),
         "@mui/material": path.resolve("./node_modules/@mui/material/"),
       },
       extensions: [".js", ".jsx", ".ts", ".tsx"],

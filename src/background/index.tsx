@@ -4,6 +4,7 @@ import Browser, {
   storage,
   Runtime,
 } from "webextension-polyfill";
+import { getStorageData, setStorageData } from "../helpers/extension_helper";
 import {
   MessageAction,
   StorageDataType,
@@ -19,65 +20,45 @@ class Background {
     runtime.onMessage.addListener(this.onMessage);
     tabs.onUpdated.addListener(this.updated, { urls: ["*://*.youtube.com/*"] });
   };
-  onMessage = async (msg: unknown, sender: Runtime.MessageSender) => {
-    var request = msg as MessageAction;
-
-    switch (request.action) {
+  onMessage = async (msg: MessageAction, sender: Runtime.MessageSender) => {
+    console.log(`msg: ${JSON.stringify(msg)}`);
+    switch (msg.action) {
       case "setStorage":
-        storage.local
-          .set(
-            request.value.DisableSite !== undefined ? {} : { ...request.value },
-          )
-          .then(() => {
-            let query: Browser.Tabs.QueryQueryInfoType = {
-              url: "*://*.youtube.com/*",
-            };
-            if (request.value.DisableSite) {
-              query = {
-                active: true,
-                ...query,
-              };
-            }
-            tabs.query(query).then((tabsList) => {
-              tabsList.forEach((tab) => {
-                if (tab.id) {
-                  console.log(`active tab: ${JSON.stringify(tab)}`);
-                  request.action = "dataChange";
-                  tabs.sendMessage(tab.id, request);
-                }
-              });
-            });
-          });
+        console.log(`msg: ${JSON.stringify(msg)}`);
+        setStorageData(msg, true, msg.value.DisableSite);
 
         break;
       case "timeJump":
         if (sender.tab) {
-          var videoData = request.value as VideoDataType;
-          var url = sender.tab.url.split("?");
-          var mainURL = url[0];
-          var query = url[1] ?? "";
-          var queryParams = new URLSearchParams(query);
-          if (queryParams.has("t")) {
-            queryParams.delete("t");
-          }
+          var videoData = msg.value as VideoDataType;
           var time =
             (videoData.seconds ?? 0) +
             (videoData.minutes ?? 0) * 60 +
             (videoData.hours ?? 0) * 3600;
+          var url = sender.tab.url.split("?");
+          var mainURL = url[0];
+          var queryParams = new URLSearchParams(url[1] ?? "");
+          if (queryParams.has("t")) {
+            queryParams.delete("t");
+          }
+
           queryParams.append("t", time.toString());
           mainURL = `${mainURL}?${queryParams.toString()}`;
           tabs.update(sender.tab.id, { url: mainURL });
         }
         break;
       case "clearAll":
-        storage.local
-          .get(["ExpireTime", "ResetTime", "RefreshTime"])
-          .then((item) => {
-            var data = item as StorageDataType;
-            storage.local.clear().then(() => {
-              storage.local.set(data);
-            });
+        getStorageData((storageData) => {
+          storage.local.clear().then(() => {
+            storage.local.set({
+              ResetTime: storageData.ResetTime,
+              RefreshTime: storageData.RefreshTime,
+              ExpireTime: storageData.ExpireTime,
+              StopExtension: storageData.StopExtension,
+            } as StorageDataType);
           });
+        });
+
         break;
       default:
         break;

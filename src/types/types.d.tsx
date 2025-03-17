@@ -3,6 +3,7 @@ export declare type MessageType = {
   ResetTime?: number;
   ExpireTime?: number;
   DisableSite?: boolean;
+  StopExtension?: boolean;
 };
 
 export declare type MessageContentType = {
@@ -26,6 +27,7 @@ export declare type StorageDataType = {
   RefreshTime?: number;
   ResetTime?: number;
   ExpireTime?: number;
+  StopExtension?: boolean;
 };
 
 export declare type DataPackage = {
@@ -36,4 +38,5 @@ export declare type DataPackage = {
   contentInterval: NodeJS.Timer;
   setVideoData: React.Dispatch<React.SetStateAction<VideoDataType>>;
   pause: boolean;
+  stopExtension: boolean;
 };

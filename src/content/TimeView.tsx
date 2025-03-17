@@ -4,7 +4,6 @@ import { DataPackage, MessageAction, VideoDataType } from "../types/types.d";
 import "./TimeView.css";
 import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
-import styled from "styled-components/native";
 
 import {
   Button,
@@ -16,27 +15,20 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { dataAction } from "../helpers/TimeView_helpers";
+import { grabVideoID, initialVideoData } from "../helpers/data_helpers";
+import { timeViewTheme } from "../themes/TimeView_theme";
 import {
-  dataAction,
-  grabVideoID,
-  initialVideoData,
-  theme,
-} from "./TimeView_helpers";
+  mouseDown,
+  mouseMove,
+  mouseUp,
+  Movement,
+} from "../listeners/TimeView_listeners";
 
-interface Movement {
-  mouseDown: boolean;
-  moving: boolean;
-  viewOffsetX: number;
-  viewOffsetY: number;
-  clickOffsetX: number;
-  clickOffsetY: number;
-  posX: number;
-  posY: number;
-}
 function TimeView(): React.JSX.Element {
   var videoID = grabVideoID();
-  var time = useRef<number>(Date.now());
   var movement = useRef<Movement>({
+    downClickTime: Date.now(),
     mouseDown: false,
     moving: false,
     viewOffsetX: 0,
@@ -59,6 +51,7 @@ function TimeView(): React.JSX.Element {
     contentInterval: null,
     setVideoData: setVideoData,
     pause: pause,
+    stopExtension: false,
   });
   dataPackage.current.videoID = videoID;
   dataPackage.current.videoData = videoData;
@@ -146,57 +139,40 @@ function TimeView(): React.JSX.Element {
       ref.remove();
     }
   };
-  const mouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-    time.current = Date.now();
-    var childBounds = event.currentTarget.getBoundingClientRect();
-    var parent = document.getElementById("player-container-inner");
-    var globalPos = parent.getBoundingClientRect();
-    movement.current = {
-      ...movement.current,
-      viewOffsetX: globalPos.left,
-      viewOffsetY: globalPos.top,
-      clickOffsetX: event.pageX - childBounds.x,
-      clickOffsetY: event.pageY - childBounds.y,
-    };
-    movement.current.mouseDown = true;
+  const timeMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    mouseDown(event, movement);
   };
-  const mouseUp = async (event: MouseEvent) => {
-    time.current = Date.now();
-    movement.current.mouseDown = false;
-    setTimeout(() => {
-      movement.current.moving = false;
-    }, 100);
+  const timeMouseUp = async (event: MouseEvent) => {
+    mouseUp(event, movement);
+  };
+  const timeMouseMove = (event: MouseEvent) => {
+    mouseMove(event, movement);
   };
   useEffect(() => {
-    document.addEventListener("mouseup", mouseUp);
-    document.addEventListener("mousemove", mouseMove);
+    document.addEventListener("mouseup", timeMouseUp);
+    document.addEventListener("mousemove", timeMouseMove);
     return () => {
-      document.removeEventListener("mouseup", mouseUp);
-      document.removeEventListener("mousemove", mouseMove);
+      document.removeEventListener("mouseup", timeMouseUp);
+      document.removeEventListener("mousemove", timeMouseMove);
     };
   }, []);
-  const mouseMove = (event: MouseEvent) => {
-    if (movement.current.mouseDown && Date.now() - time.current > 150) {
-      var target = document.getElementById("youtime-movable");
-      movement.current.moving = true;
-      var containedPosX: number = event.pageX - movement.current.viewOffsetX;
-      var containedPosY: number = event.pageY - movement.current.viewOffsetY;
-      target.style.left =
-        (containedPosX - movement.current.clickOffsetX).toString() + "px";
-      target.style.top =
-        (containedPosY - movement.current.clickOffsetY).toString() + "px";
-    }
-  };
+
   var openView = open || movement.current.moving;
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={timeViewTheme}>
       <CssBaseline />
       <div
         id="youtime-movable"
-        style={{ position: "absolute", left: 5, top: 5, visibility: "visible" }}
-        onMouseDown={mouseDown}
+        style={{
+          position: "absolute",
+          left: 5,
+          top: 5,
+          visibility: "visible",
+          zIndex: "55",
+        }}
+        onMouseDown={timeMouseDown}
       >
-        {!videoData.DisableSite && (
+        {!videoData.DisableSite && !dataPackage.current.stopExtension && (
           <div
             id="time-view-container"
             ref={viewRef}

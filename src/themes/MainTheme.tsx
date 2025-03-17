@@ -1,4 +1,4 @@
-import { createTheme, Theme, useMediaQuery } from "@mui/material";
+import { createTheme, FormControlLabel, styled, Switch } from "@mui/material";
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -82,3 +82,35 @@ export const textFieldSX = {
     textAlign: "left",
   },
 };
+
+export const FormControlLabelStyle = styled(FormControlLabel)(
+  ({ theme: Theme }) => ({
+    textAlign: "start",
+    width: "100%",
+    height: "60px",
+    marginLeft: "0",
+    marginTop: "auto",
+    marginBottom: "auto",
+    display: "inline-flex",
+    "& .MuiFormControlLabel-root": {
+      width: "100%",
+      height: "60px",
+      marginLeft: "0",
+      marginTop: "auto",
+      marginBottom: "auto",
+    },
+    "& .MuiFormControlLabel-label": {
+      height: "60px",
+    },
+  }),
+);
+
+export const SwitchStyle = styled(Switch)(({ theme }) => ({
+  width: "60px",
+  height: "40px",
+
+  "& .MuiSwitch-thumb": {
+    width: 22,
+    height: 22,
+  },
+}));
