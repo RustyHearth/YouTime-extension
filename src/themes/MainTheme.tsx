@@ -1,4 +1,13 @@
-import { createTheme, FormControlLabel, styled, Switch } from "@mui/material";
+import React from "react";
+import {
+  createTheme,
+  FormControlLabel,
+  styled,
+  Switch,
+  Tooltip,
+  tooltipClasses,
+  TooltipProps,
+} from "@mui/material";
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -114,3 +123,11 @@ export const SwitchStyle = styled(Switch)(({ theme }) => ({
     height: 22,
   },
 }));
+
+export const TooltipStyle = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }}></Tooltip>
+))({
+  [`& .${tooltipClasses.tooltip}`]: {
+    maxWidth: 130,
+  },
+});

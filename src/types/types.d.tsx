@@ -1,4 +1,4 @@
-export declare type MessageType = {
+export declare type ExtensionValues = {
   RefreshTime?: number;
   ResetTime?: number;
   ExpireTime?: number;
@@ -6,13 +6,19 @@ export declare type MessageType = {
   StopExtension?: boolean;
 };
 
-export declare type MessageContentType = {
-  refreshTime2?: number;
-};
+export enum MessageAction {
+  Init,
+  PageRefresh,
+  SetStorage,
+  DataChange,
+  TimeJump,
+  VideoClear,
+  ClearAll,
+}
 
-export declare type MessageAction = {
-  action: string;
-  value: MessageType;
+export declare type MessageTransfer = {
+  action: MessageAction;
+  value: ExtensionValues;
 };
 
 export declare type VideoDataType = {
@@ -33,10 +39,12 @@ export declare type StorageDataType = {
 export declare type DataPackage = {
   videoID: string;
   videoData: VideoDataType;
+  initializedData: boolean;
+  firstData: boolean;
   refreshTime: number;
   resetTime: number;
-  contentInterval: NodeJS.Timer;
-  setVideoData: React.Dispatch<React.SetStateAction<VideoDataType>>;
+  contentInterval: React.RefObject<NodeJS.Timer | null>;
+  timeLapse: number;
   pause: boolean;
-  stopExtension: boolean;
+  StopExtension: boolean;
 };

@@ -22,10 +22,12 @@ export const mouseMove = (
     movement.current.moving = true;
     var containedPosX: number = event.pageX - movement.current.viewOffsetX;
     var containedPosY: number = event.pageY - movement.current.viewOffsetY;
-    target.style.left =
-      (containedPosX - movement.current.clickOffsetX).toString() + "px";
-    target.style.top =
-      (containedPosY - movement.current.clickOffsetY).toString() + "px";
+    if (target) {
+      target.style.left =
+        (containedPosX - movement.current.clickOffsetX).toString() + "px";
+      target.style.top =
+        (containedPosY - movement.current.clickOffsetY).toString() + "px";
+    }
   }
 };
 
@@ -33,26 +35,30 @@ export const mouseDown = (
   event: React.MouseEvent<HTMLDivElement>,
   movement: React.RefObject<Movement>,
 ) => {
-  movement.current.downClickTime = Date.now();
-  var childBounds = event.currentTarget.getBoundingClientRect();
-  var parent = document.getElementById("player-container-inner");
-  var globalPos = parent.getBoundingClientRect();
-  movement.current = {
-    ...movement.current,
-    viewOffsetX: globalPos.left,
-    viewOffsetY: globalPos.top,
-    clickOffsetX: event.pageX - childBounds.x,
-    clickOffsetY: event.pageY - childBounds.y,
-  };
-  movement.current.mouseDown = true;
+  if (event.button === 0) {
+    movement.current.downClickTime = Date.now();
+    var childBounds = event.currentTarget.getBoundingClientRect();
+    var parent = document.getElementById("player-container-inner");
+    var globalPos = parent?.getBoundingClientRect();
+
+    movement.current = {
+      ...movement.current,
+      viewOffsetX: globalPos?.left ?? 0,
+      viewOffsetY: globalPos?.top ?? 0,
+      clickOffsetX: event.pageX - childBounds.x,
+      clickOffsetY: event.pageY - childBounds.y,
+      mouseDown: true,
+    };
+  }
 };
-export const mouseUp = async (
-  event: MouseEvent,
-  movement: React.RefObject<Movement>,
-) => {
+export const mouseUp = async (movement: React.RefObject<Movement>) => {
   movement.current.downClickTime = Date.now();
   movement.current.mouseDown = false;
   setTimeout(() => {
     movement.current.moving = false;
   }, 100);
+};
+
+export const clearIntervalListener = (timer: NodeJS.Timeout) => {
+  clearInterval(timer);
 };

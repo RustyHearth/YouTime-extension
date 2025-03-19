@@ -1,97 +1,167 @@
 import { storage } from "webextension-polyfill";
-import { compareVideo, timeValues } from "./data_helpers";
+import { compareObjects, timeValues } from "./data_helpers";
 import { getStorageData } from "./extension_helper";
-import { DataPackage, MessageAction, VideoDataType } from "../types/types.d";
+import { DataPackage, ExtensionValues, VideoDataType } from "../types/types.d";
 
-export function dataAction(
-  msg: MessageAction,
-  dataPackage: React.RefObject<DataPackage>,
+export function initData(
+  dataPackage: DataPackage,
+  setDataPackage: React.Dispatch<React.SetStateAction<DataPackage>>,
 ) {
-  if (dataPackage.current.contentInterval) {
-    clearInterval(dataPackage.current.contentInterval);
-  }
-  if (dataPackage.current.videoID.length === 0 || dataPackage.current.pause) {
-    return;
-  }
-  var videoID = dataPackage.current.videoID;
   getStorageData(
     (storageData) => {
-      let video = storageData[videoID] as VideoDataType;
-      let refreshTime =
-        storageData.RefreshTime ?? dataPackage.current.refreshTime;
-      let resetTime = storageData.ResetTime ?? dataPackage.current.resetTime;
-      let newVideoData = {
-        ...dataPackage.current.videoData,
-        ...video,
-      };
+      const videoData =
+        (storageData[dataPackage.videoID] as VideoDataType) ?? null;
 
-      if (video && video.expiration && video.expiration <= Date.now() / 1000) {
-        newVideoData = {
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-          expiration: Date.now() / 1000 + 86400,
+      var newVideoData = {
+        ...dataPackage.videoData,
+        ...videoData,
+      };
+      var newDataPackage = {
+        ...dataPackage,
+        videoData: newVideoData,
+        refreshTime: storageData.RefreshTime ?? 5,
+        resetTime: storageData.ResetTime ?? 15,
+        StopExtension: storageData.StopExtension ?? false,
+        timeLapse: 0,
+        initializedData: true,
+        pause: false,
+      };
+      if (!videoData) {
+        newDataPackage = {
+          ...newDataPackage,
+          firstData: true,
         };
       }
-      if (msg.value) {
-        if (msg.value.ExpireTime) {
-          newVideoData = {
-            ...newVideoData,
-            expiration: Date.now() / 1000 + msg.value.ExpireTime * 86400,
-          };
-        }
-        if (msg.value.DisableSite !== undefined) {
-          newVideoData = {
-            ...newVideoData,
-            DisableSite: msg.value.DisableSite,
-          };
-        }
-        if (msg.value.RefreshTime) {
-          refreshTime = msg.value.RefreshTime;
-        }
-        if (msg.value.ResetTime) {
-          resetTime = msg.value.ResetTime;
-        }
-      }
-      dataPackage.current.refreshTime = refreshTime;
-      dataPackage.current.resetTime = resetTime;
-      dataPackage.current.stopExtension = storageData.StopExtension;
-      dataPackage.current.setVideoData(newVideoData);
 
-      if (!newVideoData.DisableSite && !storageData.StopExtension) {
-        storage.local.set({ [videoID]: newVideoData });
-        dataPackage.current.contentInterval = setInterval(() => {
-          contentLoop(dataPackage);
-        }, refreshTime * 1000);
-      }
+      setDataPackage(newDataPackage);
+      runLoop(newDataPackage, setDataPackage);
     },
     false,
-    videoID,
+    dataPackage.videoID,
   );
 }
 
-export function contentLoop(dataPackage: React.RefObject<DataPackage>) {
-  //TODO: check reset time
-  var player = document.querySelector(".video-stream") as HTMLVideoElement;
-  var adCheck1 = document.querySelector(".ytp-ad-button");
-  var adCheck2 = document.querySelector(".ytp-ad-avatar");
+export function dataChange(
+  newValue: ExtensionValues,
+  dataPackage: DataPackage,
+  setDataPackage: React.Dispatch<React.SetStateAction<DataPackage>>,
+) {
+  var newDataPackage = {
+    ...dataPackage,
+  };
+  var newVideoData = dataPackage.videoData;
+
+  if (newValue) {
+    if (newValue.ExpireTime) {
+      newVideoData = {
+        ...newVideoData,
+        expiration: Date.now() / 1000 + newValue.ExpireTime * 86400,
+      };
+    }
+    if (newValue.DisableSite !== undefined) {
+      newVideoData = {
+        ...newVideoData,
+        DisableSite: newValue.DisableSite,
+      };
+    }
+    if (newValue.RefreshTime) {
+      newDataPackage = {
+        ...newDataPackage,
+        refreshTime: newValue.RefreshTime,
+      };
+    }
+    if (newValue.ResetTime) {
+      newDataPackage = {
+        ...newDataPackage,
+        resetTime: newValue.ResetTime,
+      };
+    }
+    if (newValue.StopExtension !== undefined) {
+      newDataPackage = {
+        ...newDataPackage,
+        StopExtension: newValue.StopExtension,
+      };
+    }
+    newDataPackage = {
+      ...newDataPackage,
+      videoData: { ...newVideoData },
+    };
+  }
+  storage.local.set({ [newDataPackage.videoID]: newVideoData });
+  setDataPackage(newDataPackage);
+  runLoop(newDataPackage, setDataPackage);
+}
+
+export function runLoop(
+  dataPackage: DataPackage,
+  setDataPackage: React.Dispatch<React.SetStateAction<DataPackage>>,
+) {
   if (
-    player &&
-    dataPackage.current.videoID.length > 0 &&
-    !adCheck1 &&
-    !adCheck2 &&
-    !dataPackage.current.pause
+    dataPackage.contentInterval !== null &&
+    dataPackage.contentInterval.current !== null
   ) {
-    var currentTime = player.currentTime;
+    clearInterval(dataPackage.contentInterval.current);
+  }
+  if (
+    dataPackage.StopExtension ||
+    dataPackage.pause ||
+    dataPackage.videoData.DisableSite
+  ) {
+    return;
+  }
+  dataPackage.contentInterval.current = setInterval(() => {
+    contentLoop(setDataPackage);
+  }, dataPackage.refreshTime * 1000);
+}
+
+function contentLoop(
+  setDataPackage: React.Dispatch<React.SetStateAction<DataPackage>>,
+) {
+  setDataPackage((prevState) => {
+    var player = document.querySelector(".video-stream") as HTMLVideoElement;
+    var adCheck1 = document.querySelector(".ytp-ad-button");
+    var adCheck2 = document.querySelector(".ytp-ad-avatar");
+    const currentTime = player.currentTime;
     var newVideoData = {
-      ...dataPackage.current.videoData,
+      ...prevState.videoData,
       ...timeValues(currentTime),
     };
-    if (!compareVideo(dataPackage.current.videoData, newVideoData)) {
-      dataPackage.current.setVideoData(newVideoData);
-      storage.local.set({
-        [dataPackage.current.videoID]: newVideoData,
-      });
+    var newDataPackage = {
+      ...prevState,
+    };
+    if (
+      !player ||
+      prevState.videoID.length <= 0 ||
+      adCheck1 ||
+      adCheck2 ||
+      prevState.pause
+    ) {
+      return prevState;
     }
-  }
+    if (prevState.timeLapse <= prevState.resetTime && !prevState.firstData) {
+      newDataPackage = {
+        ...prevState,
+        timeLapse: prevState.timeLapse + prevState.refreshTime,
+      };
+      return newDataPackage;
+    }
+    if (prevState.firstData) {
+      newDataPackage = {
+        ...prevState,
+        timeLapse: prevState.resetTime + 1,
+        firstData: false,
+      };
+    }
+
+    if (!compareObjects(prevState.videoData, newVideoData, [])) {
+      storage.local.set({
+        [prevState.videoID]: newVideoData,
+      });
+      return {
+        ...newDataPackage,
+        videoData: newVideoData,
+      };
+    }
+    return newDataPackage;
+  });
 }

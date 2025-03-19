@@ -8,11 +8,13 @@ import {
   SxProps,
 } from "@mui/material";
 import React from "react";
+import { TooltipStyle } from "../themes/MainTheme";
 
 export interface DropType {
   id: string;
   label: string;
   width: string;
+  tooltip: string;
   height?: string;
   onChange?: (
     id: string,
@@ -35,6 +37,7 @@ export function numArray(start: number, end: number, increment: number) {
 function DropdownField({
   id,
   label,
+  tooltip,
   width,
   ...props
 }: DropType): React.JSX.Element {
@@ -113,14 +116,17 @@ function DropdownField({
         >
           {items}
         </Select>
-        <InputLabel
-          id={labelID}
-          style={{
-            height: "unset",
-          }}
-        >
-          {label}
-        </InputLabel>
+
+        <TooltipStyle title={tooltip}>
+          <InputLabel
+            id={labelID}
+            style={{
+              height: "unset",
+            }}
+          >
+            {label}
+          </InputLabel>
+        </TooltipStyle>
       </FormControl>
     </Grid2>
   );

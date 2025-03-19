@@ -1,6 +1,10 @@
 import { SelectChangeEvent } from "@mui/material";
 import { runtime } from "webextension-polyfill";
-import { MessageType } from "../types/types.d";
+import {
+  MessageAction,
+  MessageTransfer,
+  ExtensionValues,
+} from "../types/types.d";
 
 export function CheckboxListener(
   event: React.ChangeEvent<HTMLInputElement>,
@@ -25,13 +29,15 @@ export function SelectListener(
   mainInputListener({ [id]: event.target.value }, callback);
 }
 
-function mainInputListener(message: MessageType, callback?: Function) {
+function mainInputListener(message: ExtensionValues, callback?: Function) {
   runtime
     .sendMessage({
-      action: "setStorage",
+      action: MessageAction.SetStorage,
       value: message,
-    })
+    } as MessageTransfer)
     .then(() => {
-      callback?.call(this);
+      if (callback) {
+        callback();
+      }
     });
 }

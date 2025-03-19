@@ -15,6 +15,7 @@ import {
   MainTheme,
   SwitchStyle,
   textFieldSX,
+  TooltipStyle,
 } from "./themes/MainTheme";
 import {
   CheckboxListener,
@@ -22,12 +23,16 @@ import {
   TextFieldListener,
 } from "./listeners/Listeners";
 import { runtime } from "webextension-polyfill";
-import { MessageType } from "./types/types.d";
+import {
+  MessageAction,
+  MessageTransfer,
+  ExtensionValues,
+} from "./types/types.d";
 import { getStorageData } from "./helpers/extension_helper";
 import { compareStorage } from "./helpers/data_helpers";
 
 function App() {
-  const [extension, setExtension] = useState<MessageType>({
+  const [extension, setExtension] = useState<ExtensionValues>({
     ExpireTime: 1,
     RefreshTime: 5,
     ResetTime: 15,
@@ -37,7 +42,7 @@ function App() {
   useEffect(() => {
     getStorageData((storageData, videoID) => {
       var videoData = storageData[videoID];
-      var newValue: MessageType = {
+      var newValue: ExtensionValues = {
         ExpireTime: storageData.ExpireTime ?? 1,
         RefreshTime: storageData.RefreshTime ?? 5,
         ResetTime: storageData.ResetTime ?? 15,
@@ -53,7 +58,10 @@ function App() {
     }, true);
   }, [extension]);
   const handleClear = () => {
-    runtime.sendMessage({ action: "clearAll", value: {} });
+    runtime.sendMessage({
+      action: MessageAction.ClearAll,
+      value: {},
+    } as MessageTransfer);
   };
   return (
     <ThemeProvider theme={MainTheme}>
@@ -61,22 +69,24 @@ function App() {
       <Box component="main">
         <Grid2 container direction="column">
           <Grid2 direction="row" style={{ width: "100%" }}>
-            <TextField
-              id="ExpireTime"
-              value={extension.ExpireTime}
-              label="Expiration Time"
-              variant="outlined"
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                TextFieldListener(event, () => {
-                  setExtension({
-                    ...extension,
-                    ExpireTime: parseInt(event.target.value),
+            <TooltipStyle title="Days before video timestamp expires.">
+              <TextField
+                id="ExpireTime"
+                value={extension.ExpireTime}
+                label="Expiration Time"
+                variant="outlined"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  TextFieldListener(event, () => {
+                    setExtension({
+                      ...extension,
+                      ExpireTime: parseInt(event.target.value),
+                    });
                   });
-                });
-              }}
-              sx={{ ...textFieldSX }}
-              fullWidth
-            ></TextField>
+                }}
+                sx={{ ...textFieldSX }}
+                fullWidth
+              ></TextField>
+            </TooltipStyle>
           </Grid2>
           <Grid2
             container
@@ -97,6 +107,7 @@ function App() {
               <DropdownField
                 id="RefreshTime"
                 label="RefreshTime"
+                tooltip="Interval between timestamp updates."
                 width="100%"
                 height="60px"
                 items={numArray(5, 100, 5)}
@@ -116,6 +127,7 @@ function App() {
               <DropdownField
                 id="ResetTime"
                 label="Reset Time"
+                tooltip="Seconds before starting to update after page load."
                 width="100%"
                 height="60px"
                 items={numArray(15, 100, 5)}
@@ -138,15 +150,17 @@ function App() {
               width: "100%",
             }}
           >
-            <Button
-              variant="contained"
-              style={{
-                width: "100%",
-              }}
-              onClick={handleClear}
-            >
-              Clear All Videos
-            </Button>
+            <TooltipStyle title="Removes disables status also.">
+              <Button
+                variant="contained"
+                style={{
+                  width: "100%",
+                }}
+                onClick={handleClear}
+              >
+                Clear All Videos
+              </Button>
+            </TooltipStyle>
           </Grid2>
           <Grid2
             style={{

@@ -1,5 +1,5 @@
 import Browser, { storage, tabs } from "webextension-polyfill";
-import { MessageAction, StorageDataType } from "../types/types.d";
+import { MessageTransfer, StorageDataType } from "../types/types.d";
 
 type StorageCallback = (storage: StorageDataType, videoID: string) => void;
 
@@ -8,7 +8,7 @@ export function getActiveVideoTab(tabCallback: Function) {
     const videoID =
       new URLSearchParams(activeTabs[0].url?.split("?")[1] ?? "").get("v") ??
       "";
-    tabCallback.call(this, videoID);
+    tabCallback.call(this as Function, videoID);
   });
 }
 
@@ -17,9 +17,7 @@ export function getStorageData(
   activeTab: boolean = false,
   videoID?: string,
 ) {
-  console.log(`getStorageData1`);
   var call = (callbackVideoID: string) => {
-    console.log(`getStorageData2`);
     storage.local
       .get([
         "ExpireTime",
@@ -29,9 +27,8 @@ export function getStorageData(
         callbackVideoID,
       ])
       .then((storageData) => {
-        console.log(`getStorageData3`);
         storageCallback.call(
-          this,
+          this as Function,
           storageData as StorageDataType,
           callbackVideoID,
         );
@@ -45,11 +42,10 @@ export function getStorageData(
 }
 
 export function setStorageData(
-  data: MessageAction,
+  data: MessageTransfer,
   passToTabs: boolean = false,
   activeOnly: boolean = false,
 ) {
-  console.log(`msg: ${JSON.stringify(data)}`);
   storage.local.set({ ...data.value }).then(() => {
     if (!passToTabs) {
       return;
