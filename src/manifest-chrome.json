@@ -3,7 +3,7 @@
   "name": "YouTime",
   "version": "1.0",
   "description": "Saves latest watched time from a youtube video to allow restore video",
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "unlimitedStorage"],
   "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_icon": {

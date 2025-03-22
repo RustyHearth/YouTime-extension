@@ -61,8 +61,12 @@ module.exports = (env) => {
       background: [path.resolve(__dirname, `src/background/index.tsx`)],
     },
     output: {
-      path: path.resolve(process.cwd(), `${browser}/out`),
+      path: path.resolve(process.cwd(), `${browser}`),
       filename: "[name]/[name].js",
+      publicPath: "/",
+    },
+    devServer: {
+      historyApiFallback: true,
     },
     optimization: {
       minimize: false,
@@ -86,7 +90,7 @@ module.exports = (env) => {
     }),
     new HtmlWebpackPlugin({
       title: "Popup",
-      filename: path.resolve(__dirname, `${browser}/out/popup/index.html`),
+      filename: path.resolve(__dirname, `${browser}/popup/index.html`),
       template: path.resolve(__dirname, `src/index.html`),
       chunks: ["popup"],
     }),
@@ -94,7 +98,7 @@ module.exports = (env) => {
       patterns: [
         {
           from: path.resolve(__dirname, `src/icons`),
-          to: path.resolve(__dirname, `${browser}/out/icons`),
+          to: path.resolve(__dirname, `${browser}/icons`),
         },
       ],
     }),

@@ -22,6 +22,7 @@ export declare type MessageTransfer = {
 };
 
 export declare type VideoDataType = {
+  title?: string;
   hours?: number;
   minutes?: number;
   seconds?: number;
@@ -47,4 +48,9 @@ export declare type DataPackage = {
   timeLapse: number;
   pause: boolean;
   StopExtension: boolean;
+};
+
+export declare type VideoSearch = {
+  id: string;
+  videoData: VideoDataType;
 };

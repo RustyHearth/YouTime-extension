@@ -38,13 +38,12 @@ export const MainTheme = createTheme({
   palette: { mode: "dark" },
   typography: {
     body1: {
-      width: 300,
-      height: 300,
+      width: 280,
+      height: 380,
       fontFamily: "monospace",
       fontSize: 16,
       marginLeft: "20px",
       marginRight: "20px",
-
       margin: 0,
     },
   },

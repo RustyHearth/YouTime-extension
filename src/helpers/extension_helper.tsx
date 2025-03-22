@@ -1,5 +1,10 @@
 import Browser, { storage, tabs } from "webextension-polyfill";
-import { MessageTransfer, StorageDataType } from "../types/types.d";
+import {
+  MessageTransfer,
+  StorageDataType,
+  VideoDataType,
+  VideoSearch,
+} from "../types/types.d";
 
 type StorageCallback = (storage: StorageDataType, videoID: string) => void;
 
@@ -41,6 +46,22 @@ export function getStorageData(
   }
 }
 
+export async function getVideos(): Promise<VideoSearch[]> {
+  var records = await storage.local.get();
+  var excludes = ["ExpireTime", "RefreshTime", "ResetTime", "StopExtension"];
+  return Object.keys(records)
+    .map((item) => {
+      if (excludes.includes(item)) {
+        return undefined;
+      }
+      return {
+        id: item as string,
+        videoData: records[item as string],
+      } as VideoSearch;
+    })
+    .filter((item) => item !== undefined);
+}
+
 export function setStorageData(
   data: MessageTransfer,
   passToTabs: boolean = false,
@@ -66,5 +87,32 @@ export function setStorageData(
         }
       });
     });
+  });
+}
+
+export function isVideoTabOpen(
+  id: string,
+  callback?: (open: boolean, tabID: number) => void,
+) {
+  tabs.query({ url: "*://*.youtube.com/*" }).then((items) => {
+    var open = false;
+    var tabID = 0;
+    items.forEach((element) => {
+      if (element.url.includes(id)) {
+        open = true;
+        tabID = element.id;
+      }
+    });
+    if (callback) {
+      callback(open, tabID);
+    }
+  });
+}
+
+export function deleteVideo(id: string, callback?: () => void) {
+  storage.local.remove(id).then(() => {
+    if (callback) {
+      callback();
+    }
   });
 }

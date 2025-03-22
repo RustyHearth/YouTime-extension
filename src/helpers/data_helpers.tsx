@@ -1,5 +1,6 @@
-import { ExtensionValues } from "../types/types.d";
+import { ExtensionValues, VideoDataType } from "../types/types.d";
 
+//TODO: change to compare object on app.tsx
 export function compareStorage(obj1: ExtensionValues, obj2: ExtensionValues) {
   if (
     obj1.ResetTime !== obj2.ResetTime ||
@@ -20,8 +21,9 @@ export function grabVideoID() {
   return videoID;
 }
 
-export function initialVideoData() {
+export function initialVideoData(): VideoDataType {
   return {
+    title: "",
     hours: 0,
     minutes: 0,
     seconds: 0,
@@ -30,7 +32,7 @@ export function initialVideoData() {
   };
 }
 
-export function timeValues(currentTime: number) {
+export function timeValues(currentTime: number): VideoDataType {
   var sec_num = Math.floor(currentTime);
   var hours = Math.floor(sec_num / 3600);
   var minutes = Math.floor((sec_num - hours * 3600) / 60);
@@ -38,7 +40,7 @@ export function timeValues(currentTime: number) {
 
   return { hours: hours, minutes: minutes, seconds: seconds };
 }
-export function compareObjects(obj1, obj2, exclude) {
+export function compareObjects(obj1, obj2, exclude): boolean {
   if (obj1 === null || obj2 === null) {
     return obj1 === obj2;
   }

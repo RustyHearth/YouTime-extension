@@ -23,10 +23,8 @@ class Background {
   };
   onMessage = async (msg: unknown, sender: Runtime.MessageSender) => {
     var request = msg as MessageTransfer;
-    console.log(`msg: ${JSON.stringify(msg)}`);
     switch (request.action) {
       case MessageAction.SetStorage:
-        console.log(`request: ${JSON.stringify(request)}`);
         setStorageData(request, true, request.value.DisableSite !== undefined);
 
         break;

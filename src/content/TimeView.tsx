@@ -187,7 +187,7 @@ function TimeView(): React.JSX.Element {
   const timeJump = (videoData: VideoDataType) => {
     if (!movement.current.moving) {
       runtime.sendMessage({
-        action: "timeJump",
+        action: MessageAction.TimeJump,
         value: videoData,
       });
     }

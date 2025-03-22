@@ -119,16 +119,20 @@ function contentLoop(
 ) {
   setDataPackage((prevState) => {
     var player = document.querySelector(".video-stream") as HTMLVideoElement;
-    var adCheck1 = document.querySelector(".ytp-ad-button");
-    var adCheck2 = document.querySelector(".ytp-ad-avatar");
-    const currentTime = player.currentTime;
+    var adCheck1 = document.querySelector(".ytp-ad-button") as HTMLElement;
+    var adCheck2 = document.querySelector(".ytp-ad-avatar") as HTMLElement;
+    var title = document.querySelector(
+      "#title yt-formatted-string",
+    ) as HTMLElement;
+    const currentTime: number = player.currentTime;
     var newVideoData = {
       ...prevState.videoData,
       ...timeValues(currentTime),
-    };
+      title: title.innerText.trim(),
+    } as VideoDataType;
     var newDataPackage = {
       ...prevState,
-    };
+    } as DataPackage;
     if (
       !player ||
       prevState.videoID.length <= 0 ||
