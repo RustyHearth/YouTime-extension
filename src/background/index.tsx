@@ -1,9 +1,4 @@
-import Browser, {
-  runtime,
-  tabs,
-  storage,
-  Runtime,
-} from "webextension-polyfill";
+import { runtime, tabs, storage, Runtime, Tabs } from "webextension-polyfill";
 import { getStorageData, setStorageData } from "../helpers/extension_helper";
 import {
   MessageAction,
@@ -12,6 +7,8 @@ import {
   VideoDataType,
 } from "../types/types.d";
 
+const youtubeURL = new RegExp("youtube.com");
+
 class Background {
   constructor() {
     this.init();
@@ -19,7 +16,7 @@ class Background {
 
   init = () => {
     runtime.onMessage.addListener(this.onMessage);
-    tabs.onUpdated.addListener(this.updated, { urls: ["*://*.youtube.com/*"] });
+    tabs.onUpdated.addListener(this.updated);
   };
   onMessage = async (msg: unknown, sender: Runtime.MessageSender) => {
     var request = msg as MessageTransfer;
@@ -63,14 +60,20 @@ class Background {
       default:
         break;
     }
-    return true;
+    return Promise.resolve("Message Received");
   };
 
-  updated = async (tabId: number) => {
-    tabs.sendMessage(tabId, {
-      action: MessageAction.PageRefresh,
-      value: {},
-    } as MessageTransfer);
+  updated = async (
+    tabId: number,
+    _: Tabs.OnUpdatedChangeInfoType,
+    tab: Tabs.Tab,
+  ) => {
+    if (youtubeURL.test(tab.url)) {
+      tabs.sendMessage(tabId, {
+        action: MessageAction.PageRefresh,
+        value: {},
+      } as MessageTransfer);
+    }
   };
 }
 

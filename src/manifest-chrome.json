@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTime",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "Saves latest watched time from a youtube video to allow restore video",
   "permissions": ["tabs", "storage", "unlimitedStorage"],
   "host_permissions": ["*://*.youtube.com/*"],
@@ -14,8 +14,7 @@
     "default_popup": "popup/index.html"
   },
   "background": {
-    "scripts": ["background/background.js"],
-    "type": "module"
+    "service_worker": "background/background.js"
   },
   "content_scripts": [
     {

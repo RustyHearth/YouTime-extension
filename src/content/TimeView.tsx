@@ -103,6 +103,9 @@ function TimeView(): React.JSX.Element {
         default:
           break;
       }
+      return Promise.resolve(
+        `Message Received with video ID: ${dataPackage.videoID}`,
+      );
     },
     [dataPackage],
   );
@@ -166,11 +169,13 @@ function TimeView(): React.JSX.Element {
   const handleClearData = () => {
     storage.local.remove(dataPackage.videoID).then(() => {
       dataPackage.videoData = initialVideoData();
+      var currentRefreshTime = dataPackage.refreshTime;
       initData(
         {
           ...initialDataPackage,
           videoID: grabVideoID(),
           videoData: initialVideoData(),
+          resetTime: currentRefreshTime,
         },
         setDataPackage,
       );
@@ -236,10 +241,7 @@ function TimeView(): React.JSX.Element {
                 onClose={handleClose}
               >
                 <MenuItem onClick={handleClearData}>
-                  <TooltipStyle
-                    title="Clears Data and Starts Reset Time again."
-                    placement="right"
-                  >
+                  <TooltipStyle title="Clears Video Data." placement="right">
                     <p style={{ width: "100%", height: "100%" }}>
                       Clear Video Data
                     </p>

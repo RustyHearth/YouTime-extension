@@ -76,7 +76,7 @@ export default function InfoPage() {
               <h1 style={{ paddingTop: 0, marginTop: 0 }}>Description</h1>
               <p>
                 Remembers a video's watch time. Useful when you disable youtube
-                history or the videos dont update immediately. also allows to
+                history or the video doesnt update immediately. also allows to
                 search the watched videos in your browser.
               </p>
               <p>

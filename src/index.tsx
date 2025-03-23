@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Outlet } from "react-router";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import PopupRoutes from "./routes";
