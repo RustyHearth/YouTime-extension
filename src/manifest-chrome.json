@@ -7,8 +7,9 @@
   "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_icon": {
-      "32": "icons/youtime-32.svg",
-      "48": "icons/youtime-48.svg"
+      "16": "icons/youtime-16.png",
+      "32": "icons/youtime-32.png",
+      "48": "icons/youtime-48.png"
     },
     "default_title": "YouTime",
     "default_popup": "popup/index.html"
