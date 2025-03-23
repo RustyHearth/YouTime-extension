@@ -12,6 +12,8 @@ installing with webpack with the accepted build vars:
 - npm run build:chrome
 - npm run build:ext - for both
 
+**builds are distributed in parent folder under the names of the browsers**
+
 ## Permissions and limitations
 
 This extensions doesn't use the sites cookies but the extensions local storage.
