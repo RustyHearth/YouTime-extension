@@ -31,12 +31,12 @@ import {
   ExtensionValues,
 } from "./types/types.d";
 import { getStorageData } from "./helpers/extension_helper";
-import { compareStorage } from "./helpers/data_helpers";
 import { SearchOutlined } from "@mui/icons-material";
 import SearchComplete from "./components/Search_Complete";
 import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { NavLink } from "react-router";
+import { compareObjects } from "./helpers/data_helpers";
 
 const expiredTimeText = debounce(
   (value: string, callback?: (value: string) => void) => {
@@ -73,7 +73,7 @@ function App() {
           false,
         StopExtension: storageData.StopExtension ?? false,
       };
-      if (!compareStorage(newValue, extension)) {
+      if (!compareObjects(newValue, extension, [])) {
         setExtension(newValue);
       }
       setExpireText(newValue.ExpireTime.toString());

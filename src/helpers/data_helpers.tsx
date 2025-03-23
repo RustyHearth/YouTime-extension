@@ -1,19 +1,5 @@
 import { ExtensionValues, VideoDataType } from "../types/types.d";
 
-//TODO: change to compare object on app.tsx
-export function compareStorage(obj1: ExtensionValues, obj2: ExtensionValues) {
-  if (
-    obj1.ResetTime !== obj2.ResetTime ||
-    obj1.ExpireTime !== obj2.ExpireTime ||
-    obj1.RefreshTime !== obj2.RefreshTime ||
-    obj1.DisableSite !== obj2.DisableSite
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
 export function grabVideoID() {
   var url = window.location.search;
   var urlQueries = new URLSearchParams(url);

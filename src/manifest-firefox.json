@@ -7,11 +7,33 @@
   "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_icon": {
-      "32": "icons/youtime-32.svg",
-      "48": "icons/youtime-48.svg"
+      "48": "icons/youtime-48.png",
+      "64": "icons/youtime-64.png",
+      "128": "icons/youtime-128.png",
+      "512": "icons/youtime-512.png"
     },
+
+    "theme_icons": [
+      {
+        "light": "icons/youtime-64.png",
+        "dark": "icons/youtime-64.png",
+        "size": 64
+      },
+      {
+        "light": "icons/youtime-128.png",
+        "dark": "icons/youtime-128.png",
+        "size": 128
+      }
+    ],
     "default_title": "YouTime",
     "default_popup": "popup/index.html"
+  },
+  "icons": {
+    "32": "icons/youtime-32.png",
+    "48": "icons/youtime-48.png",
+    "64": "icons/youtime-64.png",
+    "128": "icons/youtime-128.png",
+    "512": "icons/youtime-512.png"
   },
   "background": {
     "scripts": ["background/background.js"],
